@@ -26,6 +26,7 @@ class RoleManage(commands.Cog):
             return not ctx.author.bot
         return commands.check(check_bot)
 
+
     @commands.group(name='role')
     @is_bot()
     async def role(self, ctx):
@@ -35,34 +36,12 @@ class RoleManage(commands.Cog):
     @role.group(name='list')
     @is_bot()
     async def _list(self, ctx):
-        sender = ctx.author
-        roles = ctx.guild.roles
+        controllable_roles_list_dic = get_controllable_roles_list_dic(ctx.author, ctx.guild)
 
-        role_manager_role = ctx.guild.get_role(ROLE_MANAGER_ROLE_ID)
-        bottom_role = ctx.guild.get_role(BOTTOM_ROLE_ID)
+        controllable_role_names_member_has_already = controllable_roles_list_dic['has_already']
+        controllable_role_names_member_not_has_yet = controllable_roles_list_dic['has_not_yet']
 
-        # Role のポジション
-        # いじれる Role を範囲指定する
-        index_role_manager = role_manager_role.position
-        index_bottom = bottom_role.position
-
-        # +1 しないと境界用の役職も入ってしまう
-        controllable_roles = roles[index_bottom + 1:index_role_manager]
-        controllable_roles.reverse()
-
-        # 発言者が既に取得している役職名
-        role_names_member_has_already = set(role.name for role in sender.roles)
-
-        # Bot が制御可能な役職名
-        controllable_role_names = set(role.name for role in controllable_roles)
-
-        # 発言者が既に持っている制御可能な役職名リスト
-        controllable_role_names_member_has_already = list(controllable_role_names & role_names_member_has_already)
-
-        # 発言者が持っていない制御可能な役職名を抽出する
-        controllable_role_names_member_not_has_yet = list(controllable_role_names - role_names_member_has_already)
-
-        embed_message = discord.Embed(title=f'{sender.name} 様が移動できるできる役職', description='\'\'の中身をそのまま引数に渡すんだにゃ')
+        embed_message = discord.Embed(title=f'{ctx.author.name} 様が移動できるできる役職', description='\'\'の中身をそのまま引数に渡すんだにゃ')
         embed_message.add_field(name='取得可能な役職名', value=controllable_role_names_member_not_has_yet, inline=False)
         embed_message.add_field(name='外すことが可能な役職名', value=controllable_role_names_member_has_already, inline=False)
 
@@ -75,3 +54,37 @@ class RoleManage(commands.Cog):
 
 def setup(bot):
     bot.add_cog(RoleManage(bot))
+
+def get_controllable_roles_list_dic(sender, guild):
+    roles = guild.roles
+
+    role_manager_role = guild.get_role(ROLE_MANAGER_ROLE_ID)
+    bottom_role       = guild.get_role(BOTTOM_ROLE_ID)
+
+    # Role のポジション
+    # いじれる Role を範囲指定する
+    index_role_manager = role_manager_role.position
+    index_bottom       = bottom_role.position
+
+    # +1 しないと境界用の役職も入ってしまう
+    controllable_roles = roles[index_bottom + 1:index_role_manager]
+    # @everyone から順番に取ってくるので反転
+    # sort をかけてもいいかも
+    controllable_roles.reverse()
+
+    # 発言者が既に取得している役職名
+    role_names_member_has_already = set(role.name for role in sender.roles)
+
+    # Bot が制御可能な役職名
+    controllable_role_names = set(role.name for role in controllable_roles)
+
+    # 発言者が既に持っている制御可能な役職名リスト
+    controllable_role_names_member_has_already = list(controllable_role_names & role_names_member_has_already)
+
+    # 発言者が持っていない制御可能な役職名を抽出する
+    controllable_role_names_member_has_not_yet = list(controllable_role_names - role_names_member_has_already)
+
+    return {
+        'has_already':  controllable_role_names_member_has_already,
+        'has_not_yet': controllable_role_names_member_has_not_yet
+    }

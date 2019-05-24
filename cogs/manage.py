@@ -31,12 +31,13 @@ class RoleManage(commands.Cog):
     @is_bot()
     async def role(self, ctx):
         if ctx.invoked_subcommand is None:
+            # 登録されていないサブコマンドが実行されたとき
             await ctx.send(content=None, embed=self.HELP_EMBED_MESSAGE)
 
     @role.group(name='list')
     @is_bot()
     async def _list(self, ctx):
-        controllable_roles_list_dic = get_controllable_roles_list_dic(ctx.author, ctx.guild)
+        controllable_roles_list_dic = get_controllable_roles_list_dict(ctx.author, ctx.guild)
 
         controllable_role_names_member_has_already = controllable_roles_list_dic['has_already']
         controllable_role_names_member_not_has_yet = controllable_roles_list_dic['has_not_yet']
@@ -49,13 +50,27 @@ class RoleManage(commands.Cog):
 
     @role.group(name='get')
     @is_bot()
-    async def _get(self, ctx):
-        await ctx.send('`!role get` を実行したにゃ!')
+    async def _get(self, ctx, *target_role_name):
+        EMBED_MESSAGE = discord.Embed()
+        if len(target_role_name) == 0:
+            EMBED_MESSAGE.title = '引数に役職名を指定するにゃ!!'
+            EMBED_MESSAGE.description = '使い方がわからない場合は !role help を実行してみるといいにゃ。'
+            await ctx.send(content=None, embed=EMBED_MESSAGE)
+        elif len(target_role_name) > 1:
+            EMBED_MESSAGE.title = '引数はひとつだけだにゃ!!'
+            EMBED_MESSAGE.description = '使い方がわからない場合は !role help を実行してみるといいにゃ。'
+            await ctx.send(content=None, embed=EMBED_MESSAGE)
+        else:
+            # sender が持っていない役職一覧
+            controllable_role_names_member_not_has_yet = get_controllable_roles_list_dict(ctx.author, ctx.guild)['has_not_yet']
+            if target_role_name[0] in controllable_role_names_member_not_has_yet:
+                await ctx.author.add_roles()
+
 
 def setup(bot):
     bot.add_cog(RoleManage(bot))
 
-def get_controllable_roles_list_dic(sender, guild):
+def get_controllable_roles_list_dict(sender, guild):
     roles = guild.roles
 
     role_manager_role = guild.get_role(ROLE_MANAGER_ROLE_ID)
@@ -73,18 +88,15 @@ def get_controllable_roles_list_dic(sender, guild):
     controllable_roles.reverse()
 
     # 発言者が既に取得している役職名
-    role_names_member_has_already = set(role.name for role in sender.roles)
+    roles_member_has_already = sender.roles
 
-    # Bot が制御可能な役職名
-    controllable_role_names = set(role.name for role in controllable_roles)
+    # 発言者が既に持っている制御可能な役職リスト
+    controllable_roles_member_has_already = [role for role in roles_member_has_already  if role in controllable_roles]
 
-    # 発言者が既に持っている制御可能な役職名リスト
-    controllable_role_names_member_has_already = list(controllable_role_names & role_names_member_has_already)
-
-    # 発言者が持っていない制御可能な役職名を抽出する
-    controllable_role_names_member_has_not_yet = list(controllable_role_names - role_names_member_has_already)
+    # 発言者が持っていない制御可能な役職リスト
+    controllable_roles_member_has_not_yet = [role for role in controllable_roles if role not in roles_member_has_already]
 
     return {
-        'has_already':  controllable_role_names_member_has_already,
-        'has_not_yet': controllable_role_names_member_has_not_yet
+        'has_already': controllable_roles_member_has_already,
+        'has_not_yet': controllable_roles_member_has_not_yet
     }

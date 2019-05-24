@@ -66,20 +66,19 @@ class RoleManage(commands.Cog):
         self.HELP_EMBED_MESSAGE.color = discord.Color.green()
         await ctx.send(content=None, embed=self.HELP_EMBED_MESSAGE)
 
-
     @role.group(name='get')
     @is_bot()
     async def _get(self, ctx, *target_role_name):
         EMBED_MESSAGE = discord.Embed()
         if len(target_role_name) == 0:
             # 引数がない
-            EMBED_MESSAGE.title = '引数に役職名を指定するにゃ!!'
+            EMBED_MESSAGE.title = '引数に役職名を指定するにゃ!'
             EMBED_MESSAGE.description = '使い方がわからない場合は !role help を実行してみるといいにゃ。'
             EMBED_MESSAGE.color = discord.Color.red()
             await ctx.send(content=None, embed=EMBED_MESSAGE)
         elif len(target_role_name) > 1:
             # 引数が2つ以上ある(一括付与は認めていない)
-            EMBED_MESSAGE.title = '引数はひとつだけだにゃ!!'
+            EMBED_MESSAGE.title = '引数はひとつだけだにゃ!'
             EMBED_MESSAGE.description = '使い方がわからない場合は !role help を実行してみるといいにゃ。'
             EMBED_MESSAGE.color = discord.Color.red()
             await ctx.send(content=None, embed=EMBED_MESSAGE)
@@ -126,6 +125,64 @@ class RoleManage(commands.Cog):
                 EMBED_MESSAGE.color = discord.Color.green()
                 await ctx.send(content=None, embed=EMBED_MESSAGE)
 
+    @role.group(name='remove')
+    @is_bot()
+    async def _remove(self, ctx, *target_role_name):
+        EMBED_MESSAGE = discord.Embed()
+        if len(target_role_name) == 0:
+            # 引数がない
+            EMBED_MESSAGE.title = '引数に役職名を指定するにゃ!'
+            EMBED_MESSAGE.description = '使い方がわからない場合は !role help を実行してみるといいにゃ。'
+            EMBED_MESSAGE.color = discord.Color.red()
+            await ctx.send(content=None, embed=EMBED_MESSAGE)
+        elif len(target_role_name) > 1:
+            # 引数が2つ以上ある(一括削除は認めていない)
+            EMBED_MESSAGE.title = '引数はひとつだけだにゃ!'
+            EMBED_MESSAGE.description = '使い方がわからない場合は !role help を実行してみるといいにゃ。'
+            EMBED_MESSAGE.color = discord.Color.red()
+            await ctx.send(content=None, embed=EMBED_MESSAGE)
+        else:
+            # sender が持っていない役職の名前一覧
+            controllable_role_names_member_not_has_yet = []
+            controllable_roles_member_has_not_yet      = get_controllable_roles_list_dict(ctx.author, ctx.guild)['has_not_yet']
+            for role in controllable_roles_member_has_not_yet:
+                controllable_role_names_member_not_has_yet.append(role.name)
+
+            # sender がすでに持っている役職の名前一覧
+            controllable_role_names_member_has_already = []
+            controllable_roles_member_has_already      = get_controllable_roles_list_dict(ctx.author, ctx.guild)['has_already']
+            for role in controllable_roles_member_has_already:
+                controllable_role_names_member_has_already.append(role.name)
+
+            # Role Manager が操作可能な役職の名前一覧
+            controllable_role_names = []
+            controllable_roles      = get_controllable_roles_list_dict(ctx.author, ctx.guild)['controllable']
+            for role in controllable_roles:
+                controllable_role_names.append(role.name)
+
+            if target_role_name[0] in controllable_role_names_member_not_has_yet:
+                # 指定した役職をもともと持っていない
+                EMBED_MESSAGE.title = f'その役職は {ctx.author.name} がもともと持っていない役職だにゃ!'
+                EMBED_MESSAGE.description = '!role list を確認するといいにゃ。'
+                EMBED_MESSAGE.color = discord.Color.red()
+                await ctx.send(content=None, embed=EMBED_MESSAGE)
+
+            elif target_role_name[0] not in controllable_role_names:
+                # 指定した役職が存在してなかった
+                EMBED_MESSAGE.title = 'その役職は存在しないか、吾輩がいじれるものじゃないにゃ!'
+                EMBED_MESSAGE.description = '!role list を確認するか、OJI に聞くといいにゃ。'
+                EMBED_MESSAGE.color = discord.Color.red()
+                await ctx.send(content=None, embed=EMBED_MESSAGE)
+
+            else:
+                # 指定した役職が存在しており、Role Manager が剥奪できるものだった
+                target_role_index = controllable_role_names_member_has_already.index(target_role_name[0])
+                target_role = controllable_roles_member_has_already[target_role_index]
+                await ctx.author.remove_roles(target_role, reason = 'Role Manager によって外されました。')
+
+                EMBED_MESSAGE.title = f'{target_role.name} を外したにゃ!'
+                EMBED_MESSAGE.color = discord.Color.green()
+                await ctx.send(content=None, embed=EMBED_MESSAGE)
 
 def setup(bot):
     bot.add_cog(RoleManage(bot))

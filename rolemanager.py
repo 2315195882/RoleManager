@@ -2,8 +2,8 @@ from discord.ext import commands
 import cogs.manage as manage_cog
 import os
 
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 # Bot token
 TOKEN = os.getenv('TOKEN')

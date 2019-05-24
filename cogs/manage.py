@@ -21,7 +21,13 @@ class RoleManage(commands.Cog):
             return not ctx.author.bot
         return commands.check(check_bot)
 
-    @commands.command(name='list')
+    @commands.group(name='role')
+    @is_bot()
+    async def role(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send('`!role help` を実行するにゃ!')
+
+    @role.group(name='list')
     @is_bot()
     async def _list(self, ctx):
         sender = ctx.author
@@ -57,6 +63,10 @@ class RoleManage(commands.Cog):
 
         await ctx.send(content=None, embed=embed_message)
 
+    @role.group(name='get')
+    @is_bot()
+    async def _get(self, ctx):
+        await ctx.send('`!role get` を実行したにゃ!')
 
 def setup(bot):
     bot.add_cog(RoleManage(bot))

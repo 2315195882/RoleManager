@@ -8,7 +8,7 @@ load_dotenv()
 # Bot token
 TOKEN = os.getenv('TOKEN')
 
-bot = commands.Bot(command_prefix='!role ')
+bot = commands.Bot(command_prefix='!')
 
 @bot.event
 async def on_ready():

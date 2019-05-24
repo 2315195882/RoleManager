@@ -39,8 +39,14 @@ class RoleManage(commands.Cog):
     async def _list(self, ctx):
         controllable_roles_list_dic = get_controllable_roles_list_dict(ctx.author, ctx.guild)
 
-        controllable_role_names_member_has_already = controllable_roles_list_dic['has_already']
-        controllable_role_names_member_not_has_yet = controllable_roles_list_dic['has_not_yet']
+        # TODO: lambda 式と map の利用
+        controllable_role_names_member_has_already = []
+        for role in controllable_roles_list_dic['has_already']:
+            controllable_role_names_member_has_already.append(role.name)
+
+        controllable_role_names_member_not_has_yet = []
+        for role in controllable_roles_list_dic['has_not_yet']:
+            controllable_role_names_member_not_has_yet.append(role.name)
 
         embed_message = discord.Embed(title=f'{ctx.author.name} 様が移動できるできる役職', description='\'\'の中身をそのまま引数に渡すんだにゃ')
         embed_message.add_field(name='取得可能な役職名', value=controllable_role_names_member_not_has_yet, inline=False)

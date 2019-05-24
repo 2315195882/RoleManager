@@ -32,6 +32,9 @@ class RoleManage(commands.Cog):
     async def role(self, ctx):
         if ctx.invoked_subcommand is None:
             # 登録されていないサブコマンドが実行されたとき
+            self.HELP_EMBED_MESSAGE.title = '登録されたサブコマンドを利用して欲しいにゃ!'
+            self.HELP_EMBED_MESSAGE.description = 'このわかりやすいヘルプをよく読むにゃ。'
+            self.HELP_EMBED_MESSAGE.color = discord.Color.red()
             await ctx.send(content=None, embed=self.HELP_EMBED_MESSAGE)
 
     @role.group(name='list')
@@ -48,9 +51,10 @@ class RoleManage(commands.Cog):
         for role in controllable_roles_list_dic['has_not_yet']:
             controllable_role_names_member_not_has_yet.append(role.name)
 
-        embed_message = discord.Embed(title=f'{ctx.author.name} 様が移動できるできる役職', description='\'\'の中身をそのまま引数に渡すんだにゃ')
+        embed_message = discord.Embed(title=f'{ctx.author.name} が操作できるできる役職は以下のとおりですにゃ', description='\'\'の中身をそのまま引数に渡すんだにゃ')
         embed_message.add_field(name='取得可能な役職名', value=controllable_role_names_member_not_has_yet, inline=False)
         embed_message.add_field(name='外すことが可能な役職名', value=controllable_role_names_member_has_already, inline=False)
+        embed_message.color = discord.Color.green()
 
         await ctx.send(content=None, embed=embed_message)
 
@@ -59,18 +63,59 @@ class RoleManage(commands.Cog):
     async def _get(self, ctx, *target_role_name):
         EMBED_MESSAGE = discord.Embed()
         if len(target_role_name) == 0:
+            # 引数がない
             EMBED_MESSAGE.title = '引数に役職名を指定するにゃ!!'
             EMBED_MESSAGE.description = '使い方がわからない場合は !role help を実行してみるといいにゃ。'
+            EMBED_MESSAGE.color = discord.Color.red()
             await ctx.send(content=None, embed=EMBED_MESSAGE)
         elif len(target_role_name) > 1:
+            # 引数が2つ以上ある(一括付与は認めていない)
             EMBED_MESSAGE.title = '引数はひとつだけだにゃ!!'
             EMBED_MESSAGE.description = '使い方がわからない場合は !role help を実行してみるといいにゃ。'
+            EMBED_MESSAGE.color = discord.Color.red()
             await ctx.send(content=None, embed=EMBED_MESSAGE)
         else:
-            # sender が持っていない役職一覧
-            controllable_role_names_member_not_has_yet = get_controllable_roles_list_dict(ctx.author, ctx.guild)['has_not_yet']
-            if target_role_name[0] in controllable_role_names_member_not_has_yet:
-                await ctx.author.add_roles()
+            # sender が持っていない役職の名前一覧
+            controllable_role_names_member_not_has_yet = []
+            controllable_roles_member_has_not_yet      = get_controllable_roles_list_dict(ctx.author, ctx.guild)['has_not_yet']
+            for role in controllable_roles_member_has_not_yet:
+                controllable_role_names_member_not_has_yet.append(role.name)
+
+            # sender がすでに持っている役職の名前一覧
+            controllable_role_names_member_has_already = []
+            controllable_roles_member_has_already      = get_controllable_roles_list_dict(ctx.author, ctx.guild)['has_already']
+            for role in controllable_roles_member_has_already:
+                controllable_role_names_member_has_already.append(role.name)
+
+            # Role Manager が操作可能な役職の名前一覧
+            controllable_role_names = []
+            controllable_roles      = get_controllable_roles_list_dict(ctx.author, ctx.guild)['controllable']
+            for role in controllable_roles:
+                controllable_role_names.append(role.name)
+
+            if target_role_name[0] in controllable_role_names_member_has_already:
+                # 指定した役職をすでに持っている
+                EMBED_MESSAGE.title = f'その役職は {ctx.author.name} がすでに持っている役職だにゃ!'
+                EMBED_MESSAGE.description = '!role list を確認するといいにゃ。'
+                EMBED_MESSAGE.color = discord.Color.red()
+                await ctx.send(content=None, embed=EMBED_MESSAGE)
+
+            elif target_role_name[0] not in controllable_role_names:
+                # 指定した役職が存在してなかった
+                EMBED_MESSAGE.title = 'その役職は存在しないか、吾輩がいじれるものじゃないにゃ!'
+                EMBED_MESSAGE.description = '!role list を確認するか、OJI に聞くといいにゃ。'
+                EMBED_MESSAGE.color = discord.Color.red()
+                await ctx.send(content=None, embed=EMBED_MESSAGE)
+
+            else:
+                # 指定した役職が存在しており、Role Manager が付与できるものだった
+                target_role_index = controllable_role_names_member_not_has_yet.index(target_role_name[0])
+                target_role = controllable_roles_member_has_not_yet[target_role_index]
+                await ctx.author.add_roles(target_role, reason = 'Role Manager によって付与されました。')
+
+                EMBED_MESSAGE.title = f'{target_role.name} を付与したにゃ!'
+                EMBED_MESSAGE.color = discord.Color.green()
+                await ctx.send(content=None, embed=EMBED_MESSAGE)
 
 
 def setup(bot):
@@ -103,6 +148,7 @@ def get_controllable_roles_list_dict(sender, guild):
     controllable_roles_member_has_not_yet = [role for role in controllable_roles if role not in roles_member_has_already]
 
     return {
+        'controllable': controllable_roles,
         'has_already': controllable_roles_member_has_already,
         'has_not_yet': controllable_roles_member_has_not_yet
     }

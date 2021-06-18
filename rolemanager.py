@@ -1,18 +1,24 @@
+# coding: utf-8
 from discord.ext import commands
-import cogs.manage as manage_cog
 import os
+import traceback
+import discord
+
+discord_intents = discord.Intents.all()
+
+class FetchUser(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot 
 
 # from dotenv import load_dotenv
 # load_dotenv()
 
-# Bot token
-TOKEN = os.getenv('TOKEN')
-
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix="pg!",case_insensitive=True,activity=discord.Game("pg!help" + " | " + "Pre-Alpha"))
+token = os.environ['DISCORD_BOT_TOKEN']
 
 @bot.event
 async def on_ready():
-    print('ログインしたにゃ')
+    print('ログインしたよ～')
     print('-------------------')
     print(bot.user.name)
     print(bot.user.id)

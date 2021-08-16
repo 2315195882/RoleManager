@@ -26,4 +26,4 @@ async def on_ready():
 
     manage_cog.setup(bot)
 
-bot.run(TOKEN)
+bot.run(token)

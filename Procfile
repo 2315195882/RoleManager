@@ -1,1 +1,1 @@
-discordbot: python rolemanager.py
+docker: python rolemanager.py

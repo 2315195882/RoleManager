@@ -13,7 +13,7 @@ class FetchUser(commands.Cog):
 # from dotenv import load_dotenv
 # load_dotenv()
 
-bot = commands.Bot(command_prefix="pg!",case_insensitive=True,activity=discord.Game("pg!help" + " | " + "Pre-Alpha"))
+bot = commands.Bot(command_prefix="prm!",case_insensitive=True,activity=discord.Game('Beta | 導入数' + str(count), type=1))
 token = os.environ['DISCORD_BOT_TOKEN']
 
 @bot.event

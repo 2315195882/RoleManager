@@ -16,13 +16,7 @@ class FetchUser(commands.Cog):
 bot = commands.Bot(command_prefix="prm!",case_insensitive=True,activity=discord.Game('Beta | 導入数' + str(count), type=1))
 token = os.environ['DISCORD_BOT_TOKEN']
 
-@bot.event
-async def on_ready():
-    print('ログインしたよ～')
-    print('-------------------')
-    print(bot.user.name)
-    print(bot.user.id)
-    print('-------------------')
+
 
     manage_cog.setup(bot)
 

@@ -16,10 +16,10 @@ class RoleManage(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.HELP_EMBED_MESSAGE = discord.Embed()
-        self.HELP_EMBED_MESSAGE.add_field(name='!role help', value='Role Manager の使い方(このメッセージ)を表示するにゃ!', inline=False)
-        self.HELP_EMBED_MESSAGE.add_field(name='!role list', value='あなたが自身に付与 or 自身から外せる役職の一覧を表示するにゃ!\nこれより下のコマンドにはこれで表示された役職名を入力てほしいにゃ。', inline=False)
-        self.HELP_EMBED_MESSAGE.add_field(name='!role get \{役職名\}', value='\{役職名\} に与えた役職を取得するにゃ!', inline=False)
-        self.HELP_EMBED_MESSAGE.add_field(name='!role remove \{役職名\}', value='\{役職名\} に与えられた役職をあなたから外すにゃ!', inline=False)
+        self.HELP_EMBED_MESSAGE.add_field(name='prm!role help', value='Role Manager の使い方(このメッセージ)を表示するにゃ!', inline=False)
+        self.HELP_EMBED_MESSAGE.add_field(name='prm!role list', value='あなたが自身に付与 or 自身から外せる役職の一覧を表示するにゃ!\nこれより下のコマンドにはこれで表示された役職名を入力てほしいにゃ。', inline=False)
+        self.HELP_EMBED_MESSAGE.add_field(name='prm!role get \{役職名\}', value='\{役職名\} に与えた役職を取得するにゃ!', inline=False)
+        self.HELP_EMBED_MESSAGE.add_field(name='prm!role remove \{役職名\}', value='\{役職名\} に与えられた役職をあなたから外すにゃ!', inline=False)
 
     def is_bot():
         def check_bot(ctx):

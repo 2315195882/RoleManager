@@ -1,6 +1,5 @@
 # RoleManager
 [![LANGUAGE](https://img.shields.io/badge/Python-3.7.3-blue.svg)](https://docs.python.org/3/)
-[![LICENSE](https://img.shields.io/badge/License-Apache%202-orange.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 Discord の役職をコマンドで操作できる Bot
 
